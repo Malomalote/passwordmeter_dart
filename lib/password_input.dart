@@ -17,7 +17,11 @@ class _PasswordInputState extends State<PasswordInput> {
   static const color4 = 0xFFFFFFFF;
   static const color5 = 0xFFF5ECDF;
   final _myController = TextEditingController();
+  
   String pass='';
+   PassWordMeter pw=PassWordMeter();
+   String texto='';
+
   @override
   void dispose() {
     // Limpia el controlador cuando el widget se elimine del árbol de widgets
@@ -47,9 +51,10 @@ class _PasswordInputState extends State<PasswordInput> {
               controller: _myController,
               onChanged: (text) {
                 setState(() {
-                  PassWordMeter pw=PassWordMeter();
+                 
                   pw.password=text;
-                  
+                  texto='';
+                  texto=pw.texto;
                 });
               },
               //  autofocus: true,
@@ -83,6 +88,9 @@ class _PasswordInputState extends State<PasswordInput> {
                 ),*/
               ),
             ),
+          ),
+          Text(
+            texto,
           ),
         ],
       ),
