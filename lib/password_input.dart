@@ -20,7 +20,7 @@ class _PasswordInputState extends State<PasswordInput> {
   
   String pass='';
    PassWordMeter pw=PassWordMeter();
-   String texto='';
+   String _helperText='Introduce tu password';
 
   @override
   void dispose() {
@@ -53,8 +53,7 @@ class _PasswordInputState extends State<PasswordInput> {
                 setState(() {
                  
                   pw.password=text;
-                  texto='';
-                  texto=pw.texto;
+                  _helperText='Score = ${pw.score}';
                 });
               },
               //  autofocus: true,
@@ -82,15 +81,12 @@ class _PasswordInputState extends State<PasswordInput> {
                   },
                 ),
                 hintText: 'Password',
-                helperText: 'Introduce tu password',
+                helperText: _helperText,
               /*  enabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(color: Colors.red, width: 3),
                 ),*/
               ),
             ),
-          ),
-          Text(
-            texto,
           ),
         ],
       ),

@@ -1,23 +1,9 @@
+//passwordmeter CLON
+//original algorithm created by: Jeff Todnem
+//you can see the original algorithm in http://www.passwordmeter.com/js/pwdmeter.js
+
+
 class PassWordMeter {
-  //additions
-  int charNumber = 0;
-  int uppercaseNumber = 0;
-  int lowercaseNumber = 0;
-  int numbersNumber = 0;
-  int symbolNumber = 0;
-  int middleNumbersOrSymbols = 0;
-  int combinedRequirements = 0;
-  int requirements = 0;
-  //deductions
-  int onlyLetter = 0;
-  int onlyNumber = 0;
-  int repeatCharacters = 0;
-  int consecutiveUppercase = 0;
-  int consecutiveLowercase = 0;
-  int consecutiveNumber = 0;
-  int sequentialLetter = 0;
-  int sequentialNumber = 0;
-  int sequentialSymbols = 0;
 
   int _score = 0;
 
@@ -25,25 +11,29 @@ class PassWordMeter {
 
   String _password = '';
 
-  String get password => _password;
-
   set password(String password) {
     _password = password;
-    calculate();
-  }
+    _score = 0;
 
-  //TODO solo para pruebas
-  String _texto = '';
-  String get texto => _texto;
-  /////////////////
+    int additions = calculateAdd();
+    int deductions = calculateDeductions();
+    _score=additions-deductions;
+  }
 
   String upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   String lower = 'abcdefghijklmnopqrstuvwxyz';
   String numbers = '01234567890';
   String symbols = '(){}[],.-;:_´¨^`+*¡\'?¿¡!|@#€\"\\ºª·\$%&/=?¿ÇçÑñ';
 
-  void calculate() {
-    resetValues();
+  int calculateAdd() {
+    int charNumber = 0;
+    int uppercaseNumber = 0;
+    int lowercaseNumber = 0;
+    int numbersNumber = 0;
+    int symbolNumber = 0;
+    int middleNumbersOrSymbols = 0;
+    int combinedRequirements = 0;
+    int requirements = 0;
 
     _password.runes.forEach((int rune) {
       var character = new String.fromCharCode(rune);
@@ -71,71 +61,134 @@ class PassWordMeter {
     if (combinedRequirements >= 3) requirements += combinedRequirements;
 
     charNumber *= 4;
-    uppercaseNumber = (_password.length - uppercaseNumber) * 2;
-    lowercaseNumber = (_password.length - lowercaseNumber) * 2;
+    if (uppercaseNumber > 0)
+      uppercaseNumber = (_password.length - uppercaseNumber) * 2;
+    if (lowercaseNumber > 0)
+      lowercaseNumber = (_password.length - lowercaseNumber) * 2;
     numbersNumber *= 4;
     symbolNumber *= 6;
     middleNumbersOrSymbols *= 2;
     requirements *= 2;
-    _score = charNumber +
+    int totalAdditions = charNumber +
         uppercaseNumber +
         lowercaseNumber +
         numbersNumber +
         symbolNumber +
         middleNumbersOrSymbols +
         requirements;
-
-    print('upper -> $uppercaseNumber');
-    _texto += 'upper -> $uppercaseNumber\n';
-    print('lower -> $lowercaseNumber');
-    _texto += 'lower -> $lowercaseNumber\n';
-    print('number -> $numbersNumber');
-    _texto += 'number -> $numbersNumber\n';
-    print('symbol -> $symbolNumber');
-    _texto += 'symbol -> $symbolNumber\n';
-    print('number of chars -> $charNumber');
-    _texto += 'number of chars -> $charNumber\n';
-    print('middle numbers or Symbols -> $middleNumbersOrSymbols');
-    _texto += 'middle numbers or Symbols -> $middleNumbersOrSymbols\n';
-    print('requirements -> $requirements');
-    _texto += 'requirements -> $requirements\n';
-        print('score -> $score');
-    _texto += 'score -> $score\n';
+    return totalAdditions;
   }
 
-  void resetValues() {
-    //additions
-    charNumber = 0;
-    uppercaseNumber = 0;
-    lowercaseNumber = 0;
-    numbersNumber = 0;
-    symbolNumber = 0;
-    middleNumbersOrSymbols = 0;
-    combinedRequirements = 0;
-    requirements = 0;
-    //deductions
-    onlyLetter = 0;
-    onlyNumber = 0;
-    repeatCharacters = 0;
-    consecutiveUppercase = 0;
-    consecutiveLowercase = 0;
-    consecutiveNumber = 0;
-    sequentialLetter = 0;
-    sequentialNumber = 0;
-    sequentialSymbols = 0;
-    _score = 0;
+  int calculateDeductions() {
+    int totalDeductions = 0;
+    int onlyLetter = 0;
+    int onlyNumber = 0;
+    int repeatCharacters = 0;
+    int consecutiveUppercase = 0;
+    int consecutiveLowercase = 0;
+    int consecutiveNumber = 0;
+    int sequentialLetter = 0;
+    int sequentialNumber = 0;
+    int sequentialSymbols = 0;
 
-    //TODO solo para pruebas, borrar
-    _texto = '';
+    _password.runes.forEach((int rune) {
+      var character = new String.fromCharCode(rune);
+      if (upper.contains(character.toUpperCase()))
+        onlyLetter++;
+      else if (numbers.contains(character)) onlyNumber++;
+    });
+    if (onlyLetter != _password.length) onlyLetter = 0;
+    if (onlyNumber != _password.length) onlyNumber = 0;
+
+
+
+    repeatCharacters = repeatChars();
+
+
+    for (int i = 1; i < _password.length; i++) {
+      if (upper.contains(_password[i]) && upper.contains(_password[i - 1]))
+        consecutiveUppercase++;
+      if (lower.contains(_password[i]) && lower.contains(_password[i - 1]))
+        consecutiveLowercase++;
+      if (numbers.contains(_password[i]) && numbers.contains(_password[i - 1]))
+        consecutiveNumber++;
+    }
+    consecutiveUppercase *= 2;
+    consecutiveLowercase *= 2;
+    consecutiveNumber *= 2;
+
+
+    //check sequences
+    triplet(_password).forEach((value) {
+      if (upper.contains(value.toUpperCase()) ||
+          upper.contains(reverseString(value.toUpperCase())))
+        sequentialLetter++;
+      if (numbers.contains(value) || numbers.contains(reverseString(value)))
+        sequentialNumber++;
+      if (symbols.contains(value) || symbols.contains(reverseString(value)))
+        sequentialSymbols++;
+    });
+    sequentialLetter *= 3;
+    sequentialNumber *= 3;
+    sequentialSymbols *= 3;
+
+
+    totalDeductions = onlyLetter +
+        onlyNumber +
+        repeatCharacters +
+        consecutiveUppercase +
+        consecutiveLowercase +
+        consecutiveNumber +
+        sequentialLetter +
+        sequentialNumber +
+        sequentialSymbols;
+
+    return totalDeductions;
   }
 
-  /*
-  int uppercase=0;
-  int lowercase=0;
-  int number=0;
-  int symbol=0;
-  int middleNumbersOrSymbols=0;
-  int requirements=0; 
-*/
+  String reverseString(String inputString) {
+    return inputString.split('').reversed.join();
+  }
 
+  List<String> triplet(String inputString) {
+    List<String> toReturn = [];
+    if (inputString.length < 3)
+      toReturn.add(inputString);
+    else
+      for (int i = 0; i < inputString.length - 2; i++)
+        toReturn.add(inputString.substring(i, i + 3));
+    return toReturn;
+  }
+
+  //from http://www.passwordmeter.com/
+  int repeatChars() {
+
+    var nRepetitions = 0;
+    var nRepCharacter = 0;
+    var nUniqueCharacter = 0;
+
+    for (var a = 0; a < _password.length; a++) {
+      var existsChar = false;
+      for (var b = 0; b < _password.length; b++) {
+        if (_password[a] == _password[b] && a != b) {
+          existsChar = true;
+          /* 
+					Calculate icrement deduction based on proximity to identical characters
+					Deduction is incremented each time a new match is discovered
+					Deduction amount is based on total password length divided by the
+					difference of distance between currently selected match
+					*/
+          nRepetitions += (_password.length / (b - a)).abs().ceil();
+        }
+      }
+      if (existsChar) {
+        nRepCharacter++;
+        nUniqueCharacter = _password.length - nRepCharacter;
+        nRepetitions = (nUniqueCharacter > 0)
+            ? (nRepetitions / nUniqueCharacter).ceil()
+            : (nRepetitions).ceil();
+      }
+    }
+    return nRepetitions;
+  }
 }
