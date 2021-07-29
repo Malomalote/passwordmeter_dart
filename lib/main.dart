@@ -12,6 +12,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Herramientas contraseñas',
       theme: ThemeData(
+        
         backgroundColor: Colors.indigo,
         primarySwatch: Colors.blue,
       ),

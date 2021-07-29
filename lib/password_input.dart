@@ -1,7 +1,5 @@
-
 import 'package:flutter/material.dart';
 import 'package:passwordmeter_dart/password_meter.dart';
-
 
 class PasswordInput extends StatefulWidget {
   PasswordInput({Key? key}) : super(key: key);
@@ -17,10 +15,10 @@ class _PasswordInputState extends State<PasswordInput> {
   static const color4 = 0xFFFFFFFF;
   static const color5 = 0xFFF5ECDF;
   final _myController = TextEditingController();
-  
-  String pass='';
-   PassWordMeter pw=PassWordMeter();
-   String _helperText='Introduce tu password';
+
+  PassWordMeter pw = PassWordMeter();
+  String _helperText = 'Introduce tu password';
+  double percent = 0.0;
 
   @override
   void dispose() {
@@ -32,12 +30,12 @@ class _PasswordInputState extends State<PasswordInput> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(color5),
+      //backgroundColor: Color.lerp(Colors.red, Colors.green, percent/100),
       appBar: AppBar(
         backgroundColor: Color(color1),
         title: Text(
           'Herramienta para password',
-          style:TextStyle(
+          style: TextStyle(
             fontSize: 16,
             color: Color(color4),
           ),
@@ -47,13 +45,14 @@ class _PasswordInputState extends State<PasswordInput> {
         children: [
           Container(
             padding: EdgeInsets.all(15),
+            
             child: TextField(
               controller: _myController,
               onChanged: (text) {
                 setState(() {
-                 
-                  pw.password=text;
-                  _helperText='Score = ${pw.score}';
+                  pw.password = text;
+                  _helperText = 'Score = ${pw.score}';
+                  percent = pw.score.toDouble();
                 });
               },
               //  autofocus: true,
@@ -64,17 +63,13 @@ class _PasswordInputState extends State<PasswordInput> {
                 fontSize: 18,
                 color: Color(color1),
               ),
-              // cursorColor: Colors.white,
-              // cursorWidth: 15,
-              //  cursorHeight: 20,
-              //  maxLength: 25,
-
               decoration: InputDecoration(
                 prefix: IconButton(
                   icon: new Icon(Icons.clear),
                   onPressed: () {
                     setState(() {
-                      pass = "";
+                      pw.password = '';
+                      pw.comprobarCommonPassword();
                     });
 
                     _myController.clear();
@@ -82,9 +77,11 @@ class _PasswordInputState extends State<PasswordInput> {
                 ),
                 hintText: 'Password',
                 helperText: _helperText,
-              /*  enabledBorder: OutlineInputBorder(
+               
+                helperStyle: TextStyle(color: Color.lerp(Colors.red, Colors.green, percent/100)),//Colors.red),
+               border: OutlineInputBorder(
                   borderSide: BorderSide(color: Colors.red, width: 3),
-                ),*/
+                ),
               ),
             ),
           ),

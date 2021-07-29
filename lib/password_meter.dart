@@ -2,9 +2,13 @@
 //original algorithm created by: Jeff Todnem
 //you can see the original algorithm in http://www.passwordmeter.com/js/pwdmeter.js
 
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 
 class PassWordMeter {
-
   int _score = 0;
 
   int get score => _score;
@@ -14,10 +18,13 @@ class PassWordMeter {
   set password(String password) {
     _password = password;
     _score = 0;
-
-    int additions = calculateAdd();
-    int deductions = calculateDeductions();
-    _score=additions-deductions;
+    if (_password != '') {
+      int additions = calculateAdd();
+      int deductions = calculateDeductions();
+      _score = additions - deductions;
+      if (_score > 100) _score = 100;
+      if (_score < 0) _score = 0;
+    }
   }
 
   String upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -26,6 +33,7 @@ class PassWordMeter {
   String symbols = '(){}[],.-;:_´¨^`+*¡\'?¿¡!|@#€\"\\ºª·\$%&/=?¿ÇçÑñ';
 
   int calculateAdd() {
+    if (_password == '') return 0;
     int charNumber = 0;
     int uppercaseNumber = 0;
     int lowercaseNumber = 0;
@@ -53,19 +61,24 @@ class PassWordMeter {
         symbols.contains(_password[_password.length - 1]))
       middleNumbersOrSymbols--;
     //requirements
-    if (_password.length > 7) requirements++;
+    var eightCharsOrMore = 0;
+    if (_password.length > 7) eightCharsOrMore++;
     if (uppercaseNumber > 0) combinedRequirements++;
     if (lowercaseNumber > 0) combinedRequirements++;
     if (numbersNumber > 0) combinedRequirements++;
     if (symbolNumber > 0) combinedRequirements++;
-    if (combinedRequirements >= 3) requirements += combinedRequirements;
+
+    if (combinedRequirements >= 3 && eightCharsOrMore > 0)
+      requirements = eightCharsOrMore + combinedRequirements;
 
     charNumber *= 4;
     if (uppercaseNumber > 0)
       uppercaseNumber = (_password.length - uppercaseNumber) * 2;
     if (lowercaseNumber > 0)
       lowercaseNumber = (_password.length - lowercaseNumber) * 2;
-    numbersNumber *= 4;
+    (numbersNumber == _password.length)
+        ? numbersNumber = 0
+        : numbersNumber *= 4;
     symbolNumber *= 6;
     middleNumbersOrSymbols *= 2;
     requirements *= 2;
@@ -80,6 +93,7 @@ class PassWordMeter {
   }
 
   int calculateDeductions() {
+    if (_password == '') return 0;
     int totalDeductions = 0;
     int onlyLetter = 0;
     int onlyNumber = 0;
@@ -100,10 +114,7 @@ class PassWordMeter {
     if (onlyLetter != _password.length) onlyLetter = 0;
     if (onlyNumber != _password.length) onlyNumber = 0;
 
-
-
     repeatCharacters = repeatChars();
-
 
     for (int i = 1; i < _password.length; i++) {
       if (upper.contains(_password[i]) && upper.contains(_password[i - 1]))
@@ -116,7 +127,6 @@ class PassWordMeter {
     consecutiveUppercase *= 2;
     consecutiveLowercase *= 2;
     consecutiveNumber *= 2;
-
 
     //check sequences
     triplet(_password).forEach((value) {
@@ -131,7 +141,6 @@ class PassWordMeter {
     sequentialLetter *= 3;
     sequentialNumber *= 3;
     sequentialSymbols *= 3;
-
 
     totalDeductions = onlyLetter +
         onlyNumber +
@@ -162,7 +171,6 @@ class PassWordMeter {
 
   //from http://www.passwordmeter.com/
   int repeatChars() {
-
     var nRepetitions = 0;
     var nRepCharacter = 0;
     var nUniqueCharacter = 0;
@@ -191,4 +199,37 @@ class PassWordMeter {
     }
     return nRepetitions;
   }
+
+  void comprobarCommonPassword() async {
+    var path = 'assets/lista.txt';
+    //readFileAsync(path);
+    var list = await readFileAsync(path);
+    // list.forEach((element) => print(element));
+
+    final _dir = await getApplicationDocumentsDirectory();
+    String finalPath = _dir.path + Platform.pathSeparator + 'moretahn80.txt';
+    final _myFile = File(finalPath);
+
+    for (int i = 0; i < list.length; i++) {
+      await _myFile.writeAsString("${list[i]}\n", mode: FileMode.append);
+    }
+
+    print(' se ha acabado ');
+  }
+}
+
+Future<List<String>> readFileAsync(String filePath) async {
+  String content = await rootBundle.loadString(filePath);
+  int contador = 0;
+  List<String> wordList = [];
+  LineSplitter.split(content).forEach((line) {
+    PassWordMeter pw = PassWordMeter();
+    pw.password = line;
+    if (pw.score > 80) { 
+      
+      print(line);
+      wordList.add(line);
+    }
+  });
+  return wordList;
 }
